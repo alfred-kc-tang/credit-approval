@@ -1,0 +1,291 @@
+---
+title: "SVM and KNN on Credit Approval"
+author: "Alfred Ka Chau Tang"
+date: "10/5/2020"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#install.packages("kernlab")
+library(kernlab)
+#install.packages("kknn")
+library(kknn)
+```
+
+# Data Hold-Out
+
+```{r}
+data <- read.delim("credit.txt", header = TRUE, stringsAsFactors = FALSE)
+# The hold-out method
+test_mask <- sample(nrow(data), round(nrow(data) * 0.2))
+test_data <- data[test_mask,]
+nontest_data <- data[-test_mask,] 
+```
+
+# Support Vector Machine (SVM) Model
+
+## (1) K-Fold Cross-Validation for Hyperparameter Tuning
+
+```{r message=FALSE}
+TuneSVMByKFCV <- function(data, C, kernel, k_fold) {
+  folds <- cut(seq(1, nrow(data)), breaks = k_fold, labels = FALSE)
+  data_shuffled <- data[sample(nrow(data)),]
+  fold_acc <- rep(0, k_fold)
+  for (i in 1:k_fold) {
+    mask <- which(folds == i, arr.ind = TRUE)
+    valid_data <- data_shuffled[mask,]
+    train_data <- data_shuffled[-mask,]
+    svm_model <- ksvm(as.matrix(train_data[, 1:10]), 
+                      as.factor(train_data[, 11]), 
+                      type = "C-svc", kernel = kernel, 
+                      C = C, scale = TRUE)
+    pred <- predict(svm_model, valid_data[, 1:10])
+    fold_acc[i] <- sum(pred == valid_data[, 11])
+  }
+  acc <- sum(fold_acc) / nrow(data)
+  return(acc)
+}
+```
+
+```{r message=FALSE}
+rates <- c(0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000)
+svm_line_acc <- rep(0, length(rates))
+svm_poly_acc <- rep(0, length(rates))
+for (i in 1:length(rates)) {
+  svm_line_acc[i] <- TuneSVMByKFCV(nontest_data, rates[i], "vanilladot", 10)
+  svm_poly_acc[i] <- TuneSVMByKFCV(nontest_data, rates[i], "polydot", 10)
+}
+```
+
+```{r}
+plot(log(rates), svm_line_acc, type = "b", col = "blue", pch = 19, xlab = "C (in log)" , ylab="accuracy", main = "SVM - K-Fold CV", xaxt = "n")
+lines(log(rates), svm_poly_acc, type = "b", col = "orange", pch = 19)
+legend("bottomright", legend = c("Linear", "Polynomial"), col = c("blue", "orange"), pch = c(19,19), bty = "n")
+axis(1,at = log(rates), 
+     labels = c("0.00001", "0.0001", "0.001", "0.01", 
+                "0.1", "1", "10", "100", "1000"))
+```
+
+It is shown by the above plot that there is no significant difference between linear and polynomial kernels in terms of accuracy, so there is probably a linear pattern in the data. The highest accuracy is attained when C is 0.01 or above. Thus, the best SVM model is built with C = 0.01 with linear kernel, because of its simplicity with comparable performance to models with higher Cs and polynomial kernel.
+
+### (2) Leave-One-Out Cross Validation for Hyperparameter Tuning
+
+```{r}
+# -----------------------------------------------------------------------
+# TuneSVMLineByLOOCV <- function(data, C) {
+#   PredictByksvm <- function(x) {
+#     # All nearest neighbors except the data point itself are counted
+#     svm_model <- ksvm(as.matrix(data[-x, 1:10]), 
+#                       as.factor(data[-x, 11]), 
+#                       type = "C-svc", kernel = "vanilladot", 
+#                       C = C, scale = TRUE)
+#     pred <- predict(svm_model, data[x, 1:10])
+#     return(pred)
+#   }
+#   
+#   n_seq <- seq(1, nrow(data))
+#   preds <- sapply(n_seq, PredictByksvm)
+#   acc <- sum(preds == data[, 11]) / nrow(data)
+#   return(acc)
+# }
+# 
+# TuneSVMPolyByLOOCV <- function(data, C) {
+#   PredictByksvm <- function(x) {
+#     # All nearest neighbors except the data point itself are counted
+#     svm_model <- ksvm(as.matrix(data[-x, 1:10]), 
+#                       as.factor(data[-x, 11]), 
+#                       type = "C-svc", kernel = "polydot", 
+#                       C = C, scale = TRUE)
+#     pred <- predict(svm_model, data[x, 1:10])
+#     return(pred)
+#   }
+#   
+#   n_seq <- seq(1, nrow(data))
+#   preds <- sapply(n_seq, PredictByksvm)
+#   acc <- sum(preds == data[, 11]) / nrow(data)
+#   return(acc)
+# }
+# -----------------------------------------------------------------------
+```
+
+```{r}
+# -----------------------------------------------------------------------
+# svm_line_acc2 <- rep(0, length(rates))
+# svm_poly_acc2 <- rep(0, length(rates))
+# for (i in 1:length(rates)) {
+#   svm_line_acc2[i] <- TuneSVMLineByLOOCV(nontest_data, i)
+#   svm_poly_acc2[i] <- TuneSVMPolyByLOOCV(nontest_data, i)
+# }
+# 
+# plot(svm_line_acc2, type = "b", col = "blue", pch = 19, xlab = "K" , ylab="accuracy", main = "SVM - LOOCV")
+# lines(svm_poly_acc2, type = "b", col = "orange", pch = 19)
+# legend("bottomright", legend = c("Manhattan", "Euclidean"), col = c("blue", "orange"), pch = c(19,19), bty = "n")
+# -----------------------------------------------------------------------
+```
+
+This part is commented out because the code is computationally intensive. It is observed, however, that the same accuracy of about 0.86 is attained regardless of the size of the parameter C; in other words, even our smallest candidate of C, i.e. 0.00001, gives the same accuracy as our largest candidate of C, i.e. 1000, does. Furthermore, linear and polynomial kernels achieve the same accuracy.
+
+## K-Nearest Neighbor (KNN) Model
+
+### (1) K-fold Cross Validation for Hyperparameter Tuning
+
+```{r}
+TuneKNNByKFCV <- function(data, k, k_fold, d) {
+  folds <- cut(seq(1, nrow(data)), breaks = k_fold, labels = FALSE)
+  data_shuffled <- data[sample(nrow(data)),]
+  fold_acc <- rep(0, k_fold)
+  for (i in 1:k_fold) {
+    mask <- which(folds == i, arr.ind = TRUE)
+    valid_data <- data_shuffled[mask,]
+    train_data <- data_shuffled[-mask,]
+    knn_model <- kknn(R1 ~ ., train_data, valid_data, distance = d, k = k, scale = TRUE)
+    fold_acc[i] <- sum(as.integer(knn_model$fitted.values + 0.5) == valid_data[,11])
+  }
+  acc <- sum(fold_acc) / nrow(data)
+  return(acc)
+}
+```
+
+```{r}
+knn_manhattan_acc <- rep(0, 30)
+knn_euclidean_acc <- rep(0, 30)
+for (k in 1:30) {
+  knn_manhattan_acc[k] <- TuneKNNByKFCV(nontest_data, k, 10, 1)
+  knn_euclidean_acc[k] <- TuneKNNByKFCV(nontest_data, k, 10, 2)
+}
+```
+
+```{r}
+plot(knn_manhattan_acc, type = "b", col = "blue", pch = 19, xlab = "K" , ylab="accuracy", main = "KNN - K-Fold CV using TuneKNNByKFCV")
+lines(knn_euclidean_acc, type = "b", col = "orange", pch = 19)
+legend("bottomright", legend = c("Manhattan", "Euclidean"), col = c("blue", "orange"), pch = c(19,19), bty = "n")
+```
+
+In fact, the above K-fold Cross Validation can be accomplished by the built-in function cv.kknn.
+
+```{r}
+knn_manhattan_acc2 <- rep(0, 30)
+knn_euclidean_acc2 <- rep(0, 30)
+for (k in 1:30) {
+  knn_kfcv_man <- cv.kknn(R1 ~ ., nontest_data, kcv = 10, k = k, distance = 1, scale = TRUE)
+  knn_kfcv_euc <- cv.kknn(R1 ~ ., nontest_data, kcv = 10, k = k, distance = 2, scale = TRUE)
+  pred_man <- as.integer(knn_kfcv_man[[1]][,2] + 0.5)
+  pred_euc <- as.integer(knn_kfcv_euc[[1]][,2] + 0.5)
+  knn_manhattan_acc2[k] <- sum(pred_man == nontest_data[,11]) / nrow(nontest_data)
+  knn_euclidean_acc2[k] <- sum(pred_euc == nontest_data[,11]) / nrow(nontest_data)
+}
+```
+
+```{r}
+plot(knn_manhattan_acc2, type = "b", col = "blue", pch = 19,  xlab = "K" , ylab="accuracy", main = "KNN - K-Fold CV using cv.kknn")
+lines(knn_euclidean_acc2, type = "b", col = "orange", pch = 19)
+legend("bottomright", legend = c("Manhattan", "Euclidean"), col = c("blue", "orange"), pch = c(19,19), bty = "n")
+```
+
+Regardless of using my own function or the built-in one, the above two plots show that the KNN model performs better on this data set when K >= 5 and using Manhattan distance. Despite the fluctuations with respect to the accuracy, there is no significant difference between the Ks that are near 15.
+
+### (2) Leave-One-Out Cross Validation for Hyperparameter Tuning
+
+Given the small sample size, we can make the best use of the training set by utilizing leave-one-out cross validation, i.e. using all the data points except itself to predict each of them.
+
+```{r}
+TuneKNNByLOOCV <- function(data, k, d) {
+  PredictBykknn <- function(x) {
+    # All nearest neighbors except the data point itself are counted
+    knn_model <- kknn(R1 ~ ., data[-x,], data[x,], 
+                      k = k, distance = d, scale = TRUE)
+    # kknn returns the proportion of the k-nearest neighbors that are 1
+    pred <- as.integer(knn_model$fitted.values + 0.5)
+    return(pred)
+  }
+  
+  n_seq <- seq(1, nrow(data))
+  preds <- sapply(n_seq, PredictBykknn)
+
+  # -----------------------------------------------------------------------
+  # the for-loop version with the same logic
+  # given the number of loops (i.e. sample size), it has slower performance
+  # for (i in 1:nrow(data)) {
+  #   knn_model <- kknn(R1 ~ ., data[-i, ], data[i, ], 
+  #                     k = k, distance = d, scale = TRUE)
+  #   pred[i] <- as.integer(knn_model$fitted.values + 0.5)
+  # }
+  # -----------------------------------------------------------------------
+  
+  acc <- sum(preds == data[, 11]) / nrow(data)
+  return(acc)
+}
+```
+
+```{r}
+knn_manhattan_acc3 <- rep(0, 30)
+knn_euclidean_acc3 <- rep(0, 30)
+for (k in 1:30) {
+  knn_manhattan_acc3[k] <- TuneKNNByLOOCV(nontest_data, k, 1)
+  knn_euclidean_acc3[k] <- TuneKNNByLOOCV(nontest_data, k, 2)
+}
+```
+
+```{r}
+plot(knn_manhattan_acc3, type = "b", col = "blue", pch = 19, xlab = "K" , ylab="accuracy", main = "KNN - LOOCV using TuneKNNByLOOCV")
+lines(knn_euclidean_acc3, type = "b", col = "orange", pch = 19)
+legend("bottomright", legend = c("Manhattan", "Euclidean"), col = c("blue", "orange"), pch = c(19,19), bty = "n")
+```
+
+Again, the above leave-one-out cross validation can be done by the built-in function train.kknn, which is in fact computationally very efficient and faster than cv.kknn which does not yet contain the test of different models.
+
+```{r}
+kmax = 30
+knn_loocv_man <- train.kknn(R1 ~ ., nontest_data, 
+                            kmax = kmax, distance = 1, scale = TRUE)
+knn_loocv_euc <- train.kknn(R1 ~ ., nontest_data, 
+                            kmax = kmax, distance = 2, scale = TRUE)
+knn_manhattan_acc4 <- rep(0, kmax)
+knn_euclidean_acc4 <- rep(0, kmax)
+for (k in 1:kmax) {
+  pred_man <- as.integer(knn_loocv_man$fitted.values[[k]] + 0.5)
+  pred_euc <- as.integer(knn_loocv_euc$fitted.values[[k]] + 0.5)
+  knn_manhattan_acc4[k] <- sum(pred_man == nontest_data[,11]) / nrow(nontest_data)
+  knn_euclidean_acc4[k] <- sum(pred_euc == nontest_data[,11]) / nrow(nontest_data)
+}
+```
+
+```{r}
+plot(knn_manhattan_acc4, type = "b", col = "blue", pch = 19, xlab = "K" , ylab="accuracy", main = "KNN - LOOCV using train.kknn")
+lines(knn_euclidean_acc4, type = "b", col = "orange", pch = 19)
+legend("bottomright", legend = c("Manhattan", "Euclidean"), col = c("blue", "orange"), pch = c(19,19), bty = "n")
+```
+
+Similar to what we observed from K-fold cross validation, the above two plots show that the KNN model performs better on this data set when K >= 5 and using Manhattan distance. Although the highest accuracy is attained with a different K given the randomness, odd number of K is preferred in case that a tie between the two classes exists.
+
+# The Best Model
+
+```{r}
+svm_best_acc <- max(cbind(svm_line_acc, svm_poly_acc))
+svm_best_acc
+```
+
+```{r}
+knn_best_acc <- max(cbind(knn_manhattan_acc, knn_manhattan_acc2, knn_manhattan_acc3, knn_manhattan_acc4))
+knn_best_acc
+```
+
+The best SVM model does a slightly better job than its KNN counterpart, even though KNN is given a favor without a fixed k due to the random variations in performance. In any case, the SVM is chosen as the best since it predicts more accurately. To obtain the unbiased estimate of its performance, let us see how it performs on the test set as follows:
+
+```{r}
+best_model <- ksvm(as.matrix(nontest_data[, 1:10]), 
+                   as.factor(nontest_data[, 11]), 
+                   type = "C-svc", kernel = "vanilladot", 
+                   C = 0.01, scale = TRUE)
+pred <- predict(best_model, test_data[, 1:10])
+sum(pred == test_data[, 11]) / nrow(test_data)
+```
+
+It achieves the accuracy of roughly 0.85.
