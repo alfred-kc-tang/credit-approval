@@ -19,9 +19,13 @@ The data set is obtained from the [UCI Machine Learning Repository](https://arch
 
 ## Methodology
 
-The hold-out method is adopted to in order to have an unbiased estimate of the chosen model's performance; to put it simply, a test set is created from the data that is only used to estimate the performance of the selected model.\
-K-fold cross validation splits the data into k-fold, and then treats one of the folds as validation set at one time and the remaining as training set to predict about the former validation set, where such a procedure is followed k times.\
-Leave-one-out cross validation, on the other hand, makes prediction for a given data point using all the data except the data point itself; that is to say, it treats the data point that the model tries to predict at as being the sole member of the validation set and all the others as being in the training set. In fact, leave-one-out cross validation is a special case of k-fold cross validation, where k equals sample size of the training data. For building the two machine learning models, I used the kernlab and kknn packages in R.
+The hold-out method is adopted to in order to have an unbiased estimate of the chosen model's performance; to put it simply, a test set is created from the data that is only used to estimate the performance of the selected model.
+
+K-fold cross validation splits the data into k-fold, and then treats one of the folds as validation set at one time and the remaining as training set to predict about the former validation set, where such a procedure is followed k times.
+
+Leave-one-out cross validation, on the other hand, makes prediction for a given data point using all the data except the data point itself; that is to say, it treats the data point that the model tries to predict at as being the sole member of the validation set and all the others as being in the training set. In fact, leave-one-out cross validation is a special case of k-fold cross validation, where k equals sample size of the training data.
+
+For building the two machine learning models, I used the kernlab and kknn packages in R.
 
 ## Findings
 
