@@ -24,7 +24,10 @@ By the same token, leave-one-out cross validation makes prediction for a given d
 
 ## Findings
 
-![plot of accuracy vs C on SVM in KFCV](https://github.com/alfred-kctang/credit-approval/blob/master/SVM.png?style=center)\
+<p align="center">
+![plot of accuracy vs C on SVM in KFCV](https://github.com/alfred-kctang/credit-approval/blob/master/SVM.png)
+<p>
+
 As shown by the above plot, there is no significant difference between linear and polynomial kernels in terms of accuracy, so there is probably a linear pattern in the data. The highest accuracy is attained when C is 0.01 or above. Thus, the best SVM model is built with C = 0.01 with linear kernel, because of its simplicity with comparable performance to models with higher Cs and polynomial kernel.
 
 ![plot of accuracy vs K on KNN in LOOCV](https://github.com/alfred-kctang/credit-approval/blob/master/KNN.png?style=center)\
