@@ -25,15 +25,15 @@ By the same token, leave-one-out cross validation makes prediction for a given d
 ## Findings
 
 <p align="center">
-![plot of accuracy vs C on SVM in KFCV](https://github.com/alfred-kctang/credit-approval/blob/master/SVM.png)
-</p>
-<p align="center">
   <img src="https://github.com/alfred-kctang/credit-approval/blob/master/SVM.png?raw=true" alt="plot of accuracy vs C on SVM in KFCV"/>
 </p>
 
 As shown by the above plot, there is no significant difference between linear and polynomial kernels in terms of accuracy, so there is probably a linear pattern in the data. The highest accuracy is attained when C is 0.01 or above. Thus, the best SVM model is built with C = 0.01 with linear kernel, because of its simplicity with comparable performance to models with higher Cs and polynomial kernel.
 
-![plot of accuracy vs K on KNN in LOOCV](https://github.com/alfred-kctang/credit-approval/blob/master/KNN.png?style=center)\
+<p align="center">
+  <img src="https://github.com/alfred-kctang/credit-approval/blob/master/KNN.png?raw=true" alt="plot of accuracy vs K on KNN in LOOCV"/>
+</p>
+
 The above plot shows that the KNN model performs better on this data set when K >= 5 and using Manhattan distance. Although the highest accuracy is attained with a different K given the randomness, odd number of K is preferred in case that a tie between the two classes exists.
 
 As it turns out, SVM performs better than KNN for this data set. Its performance on the test set is not far from its performance on the training and validation sets during the cross-validations, which is roughly 0.85 on average. It even achieved accuracy of 0.885 in a run, as shown on the [markdown webpage](https://alfred-kctang.github.io/credit-approval/).
