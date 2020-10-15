@@ -6,11 +6,12 @@
 * [Data Source](#datasource)
 * [Methodology](#methodology)
 * [Findings](#findings)
+* [Keywords](#keywords)
 * [License](#license)
 
 ## Goal
 
-The goal of this project is to demonstrate the workflow of using k-fold and leave-one-out cross validations to tune the hyperparameters of two common machine learning models, namely Support Vector Machine (SVM) and K-Nearest Neighbor (KNN), and to select the best from them for the credit approval data set.
+The goal of this project is to demonstrate the workflow of using k-fold and leave-one-out cross validations to tune the hyperparameters of two common classification models in machine learning, namely Support Vector Machine (SVM) and K-Nearest Neighbor (KNN), and to select the best from them for the credit approval data set.
 
 ## Data Source
 
@@ -37,6 +38,10 @@ As shown by the above plot, there is no significant difference between linear an
 The above plot shows that the KNN model performs better on this data set when K >= 5 and using Manhattan distance. Although the highest accuracy is attained with a different K given the randomness, odd number of K is preferred in case that a tie between the two classes exists.
 
 As it turns out, SVM performs better than KNN for this data set. Its performance on the test set is not far from its performance on the training and validation sets during the cross-validations, which is roughly 0.85 on average. It even achieved accuracy of 0.885 in a run, as shown on the [markdown webpage](https://alfred-kctang.github.io/credit-approval/).
+
+## Keywords
+
+classification, Support Vector Machine (SVM), K-Nearest Neighbors (KNN), validation, k-fold cross validation, leave-one-out cross validation (LOOCV), Hold-Out method
 
 ## License
 
