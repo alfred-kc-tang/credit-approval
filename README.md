@@ -45,7 +45,7 @@ As it turns out, SVM performs better than KNN for this data set. Its performance
 
 ## Keywords
 
-classification, Support Vector Machine (SVM), K-Nearest Neighbors (KNN), validation, k-fold cross validation, leave-one-out cross validation (LOOCV), Hold-Out method
+classification, Holdout method, k-fold cross validation, K-Nearest Neighbors (KNN), leave-one-out cross validation (LOOCV), Support Vector Machine (SVM), validation
 
 ## License
 
