@@ -7,6 +7,7 @@
 * [Methodology](#methodology)
 * [Findings](#findings)
 * [Keywords](#keywords)
+* [Coding Style](#codingstyle)
 * [License](#license)
 
 ## Goal
@@ -46,6 +47,10 @@ As it turns out, SVM performs better than KNN for this data set. Its performance
 ## Keywords
 
 classification, Holdout method, k-fold cross validation, K-Nearest Neighbors (KNN), leave-one-out cross validation (LOOCV), Support Vector Machine (SVM), validation
+
+## Coding Style
+
+This projects follows [Google's R Style Guide](https://google.github.io/styleguide/Rguide.html), which is a fork of the [Tidyverse Style Guide](https://style.tidyverse.org/) by Hadley Wickham.
 
 ## License
 
