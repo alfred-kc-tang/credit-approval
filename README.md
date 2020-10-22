@@ -3,11 +3,11 @@
 ## Table of Contents
 
 * [Goal](#goal)
-* [Data Source](#data source)
+* [Data Source](#data-source)
 * [Methodology](#methodology)
 * [Findings](#findings)
 * [Keywords](#keywords)
-* [Coding Style](#coding style)
+* [Coding Style](#coding-style)
 * [License](#license)
 
 ## Goal
