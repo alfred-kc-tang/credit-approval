@@ -4,7 +4,6 @@
 
 * [Goal](#goal)
 * [Data Source](#data-source)
-** [subpoint](#subpoint)
 * [Methodology](#methodology)
 * [Findings](#findings)
 * [Keywords](#keywords)
@@ -16,8 +15,6 @@
 The goal of this project is to demonstrate the workflow of using k-fold and leave-one-out cross validations to tune the hyperparameters of two common classification models in machine learning, namely Support Vector Machine (SVM) and K-Nearest Neighbor (KNN), and to select the best from them for the credit approval data set.
 
 ## Data Source
-
-### subpoint
 
 The data set is obtained from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Credit+Approval). However, the data set has been processed to contain data without missing values and categorial variables.
 
