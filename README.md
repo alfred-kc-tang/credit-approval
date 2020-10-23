@@ -1,4 +1,4 @@
-# [SVM and KNN on Credit Approval Data Set](https://alfred-kctang.github.io/credit-approval/)
+# [SVM and KNN on Credit Approval](https://alfred-kctang.github.io/credit-approval/)
 
 ## Table of Contents
 
